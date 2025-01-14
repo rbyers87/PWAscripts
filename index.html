@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PWA Website Wrapper</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="styles.css">
+    <meta name="theme-color" content="#2196f3">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+</head>
+<body>
+    <div id="content">
+        <iframe id="mainFrame" src="https://example.com" style="display: none;"></iframe>
+        <div id="offlineMessage" style="display: none;">
+            <h1>Currently Offline</h1>
+            <p>Please check your internet connection and try again.</p>
+        </div>
+    </div>
+
+    <!-- Load UserScripts -->
+    <script src="userscripts.js"></script>
+    
+    <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful');
+                    })
+                    .catch(err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+
+        // Check online status
+        function updateOnlineStatus() {
+            const iframe = document.getElementById('mainFrame');
+            const offlineMsg = document.getElementById('offlineMessage');
+            
+            if (navigator.onLine) {
+                iframe.style.display = 'block';
+                offlineMsg.style.display = 'none';
+            } else {
+                iframe.style.display = 'none';
+                offlineMsg.style.display = 'block';
+            }
+        }
+
+        // Handle iframe load and inject UserScripts
+        document.getElementById('mainFrame').addEventListener('load', function() {
+            // Inject UserScripts
+            if (window.userScriptManager) {
+                window.userScriptManager.injectScripts(this);
+            }
+        });
+
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        updateOnlineStatus();
+    </script>
+</body>
+</html>
